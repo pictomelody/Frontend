@@ -17,14 +17,20 @@
 </label>
 <br>
 </form>
-<!--add stuff to getData function (using ajax) and add patternNotesPlay function -->
-<button type="button" onclick="getData(); patternChordsPlay()"><img src="Play.png" width="25" height="25"></button>
-<!-- Add command to stop the playNotes -->
+<button type="button" onclick="getData(); patternNotesPlay(); patternChordsPlay()"><img src="Play.png" width="25" height="25"></button>
 <button type="button" onclick="Stop()"><img src="Stop.png" width="25px" height="25px"></button>
 
 <script type="text/javascript" src="tone/0.8.0/package/build/Tone.js"></script>
 <script language="javascript" type="text/javascript">
 	<!-- Hide JavaScript
+	var seed = 300; //Seed can be any number, integer or float.
+  	function pseudoRandomSeed() {
+		var returnNum = Math.pow(Math.sin(seed), 2);
+		seed += Math.E; //Increment seed.
+		var randNum=Math.abs(returnNum - 1E-10); //Maintain [0,1) bounds. 
+		console.log(randNum);
+		return randNum;
+	}
 	function getProgression(key, major){ //get chord progression from a key
 		if(key.charAt(0)>='F' || key.charAt(0)<'C')
 			key= key+"3"
@@ -68,20 +74,26 @@
 		var major=true; 
 		chords= getProgression(key, major);
 		//add stuff to get notes (here or seperate function)
+		notes=[["F4"],["G4"],["Ab4"],["C4"],["D4"]];
 	}
 	var pattern1; var pattern2;
 	
 	function patternNotesPlay(){
+		var polySynth1 = new Tone.PolySynth(2, Tone.AMSynth).toMaster();
+		pattern1 = new Tone.Pattern(function(time, note){ 
+			polySynth1.triggerAttackRelease(note,"4n");
+		}, notes, "up");
+		Tone.Transport.start();
+		pattern1.start();
 		//gets pattern of notes (pattern1) and plays them
-	}
-	//replace Math.random with (kinda) seeded random numbers 
+	} 
 	function patternChordsPlay(){
-		var durations= ["1m","1m","4n","16n","16n","8n","8n","8n"];
+		var durations= ["1m","4n","8n","16n"];
 
-		var polySynth = new Tone.PolySynth(4, Tone.AMSynth).toMaster();
-		polySynth.volume=-50;
-		pattern2 = new Tone.Pattern(function(time, note){
-			polySynth.triggerAttackRelease(note,durations[Math.floor(Math.random()*8)]);
+		var polySynth2 = new Tone.PolySynth(4, Tone.AMSynth).toMaster();
+		polySynth2.volume=-50;
+		pattern2 = new Tone.Pattern(function(time, note){ 
+			polySynth2.triggerAttackRelease(note,durations[Math.floor(pseudoRandomSeed()*4)]);
 		}, chords, "up");
 		Tone.Transport.bpm.value=200;
 		Tone.Transport.start();
@@ -89,7 +101,7 @@
 	}
 	
 	function Stop(){
-		//pattern1.stop();
+		pattern1.stop();
 		pattern2.stop();
 		Tone.Transport.stop();
 	}
